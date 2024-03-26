@@ -8,41 +8,39 @@ import matplotlib.image as mpimg
 from scipy import ndimage
 import csv
 
-# EN ESTE PROGRAMA SIMPLEMENTE SE HACE EL TRATAMIENTO DE DATOS Y SE PLOTEAN LOS DATOS
+# In this program, data processing is performed and the data is plotted.
 
-
-#ruta de los archivos
+# Path of the files
 pathDL = r'C:\Users\836582\Desktop\Brochado\Archivos Brochadora'
 
-
+# Input parameters
 teeth_number = 42
 first_tooth_position = 915
 step = 10
 disk_width = 40
-
 
 numseg = 5
 MGnum= 1.27
 
 transition = int(disk_width) / int(step) + numseg
 
+# Broaching zones
 zonaBrochadoInicio = int(first_tooth_position)
 zonaEstableInicio = int(first_tooth_position) + (transition * int(step))
 zonaEstableFin =  int(first_tooth_position) + (int(teeth_number) - transition) * int(step)
 zonaBrochadoFin = int(first_tooth_position) + (int(teeth_number) * int(step))
-
 
 print("ZONA BROCHADO INICIO: " + str(zonaBrochadoInicio))
 print("ZONA ESTABLE INICIO: " + str(zonaEstableInicio))
 print("ZONA ESTABLE FIN: " + str(zonaEstableFin))
 print("ZONA BROCHADO FIN: " + str(zonaBrochadoFin))
 
-# Donde quiero exportar los errores generados, modelos e imagenes
+# Where to export the generated errors, models, and images
 ruta= r'C:\Users\836582\Desktop\Brochado\export'
 
 
 colores = ['limegreen', 'teal', 'orange', 'gold', 'navy']
-###################### Deactivates warning
+# Deactivates warning
 pd.options.mode.chained_assignment = None  # default='warn'
 sns.set_style("whitegrid")
 plt.rcParams["font.family"] = "serif"
@@ -56,13 +54,13 @@ plt.rc('font', **font)
 
 plt.rcParams["font.serif"] = ["Times New Roman"]
 
-pd.options.mode.chained_assignment = None  # Esto desactiva temporalmente la advertencia
+pd.options.mode.chained_assignment = None  # This temporarily deactivates the warning
 
 
-######################LIMPIEZA DE DATOS ENTRENAMIENTO MODELO: Usamos dos datasets CTS y U012
-#Importar los datos
+###################### DATA CLEANING TRAINING MODEL: We use two datasets
+# Importing the data
 
-### Uso esta funcion para importar los datos
+### Using this function to import the data
 def loader(path: str, lista: list):
     all_files = glob.glob(path + "\\" + "*.csv")
     all_files.sort()
@@ -73,8 +71,6 @@ def loader(path: str, lista: list):
 
     return lista
 
-
-# INTERQ
 DLlist = []  # Datalogger
 DLlist = loader(pathDL, DLlist)
 
@@ -84,7 +80,7 @@ for i in range(len(DLlist)):  # Cleans double data
     DLlist[i] = DLlist[i][::2]
 
 
-
+# Data clean-up
 for DLdf in DLlist:
     for k in range(1, 10):
         DLdf.loc[k - 1, 'A.POS.Z'] = 0
@@ -92,9 +88,6 @@ for DLdf in DLlist:
     DLdf['V.PLC.R[202]'] = (DLdf['V.PLC.R[202]'] + abs(DLdf['V.PLC.R[201]']))
     DLdf['V.PLC.R[205]'] = (abs(DLdf['V.PLC.R[205]']) + abs(DLdf['V.PLC.R[206]']))
     DLdf['V.PLC.R[211]'] = (abs(DLdf['V.PLC.R[211]']) + abs(DLdf['V.PLC.R[212]']))
-
-
-
 
 
 
@@ -123,11 +116,8 @@ def FigTorque(label, dfbroach, MediaEstable, y_max, y_min):
 
 
 
-
 # Breakage
 def AnalisisRotura(DLlist, pasada, y_min, y_max):
-
-
     pasada_rota = pasada  # The current and previous passes for comparison and detecting the broken tooth
     pasada_ref = pasada - 1
     pasadas_Analisis = [pasada_rota, pasada_ref]
@@ -183,24 +173,19 @@ def AnalisisRotura(DLlist, pasada, y_min, y_max):
     plt.legend(loc="lower left")
     plt.show()
 
-
     return (DienteRotura)
-
-
-
-
-
-
 
 rangestable = []
 maxestable = []
 minestable = []
 mediaestable = []
 
-# Crear un DataFrame para almacenar los resultados
-summary_data = pd.DataFrame(columns=['Pasada', 'Max_Torque', 'Min_Torque', 'Mean_Torque', 'Amplitude'])
 
-# Calcular y almacenar los resultados para cada pasada de la ZONA ESTABLE
+
+# Create a DataFrame to store the results
+summary_data = pd.DataFrame(columns=['Pass', 'Max_Torque', 'Min_Torque', 'Mean_Torque', 'Amplitude'])
+
+# Calculate and store the results for each pass in the STABLE ZONE
 for idx, DLdf in enumerate(DLlist):
 
     DLdf = DLdf.loc[(DLdf['A.POS.Z'] >= zonaEstableInicio) & (DLdf['A.POS.Z'] <= zonaEstableFin)]
@@ -212,17 +197,17 @@ for idx, DLdf in enumerate(DLlist):
 
     rangestable.append(amplitude)
 
-    pasada = f'{idx + 1} broaching stroke'
-    pas = idx
-    print(pasada)
-    media_rango = sum(rangestable) / len(rangestable)
+    pass_str = f'{idx + 1} broaching stroke'
+    pass_num = idx
+    print(pass_str)
+    mean_range = sum(rangestable) / len(rangestable)
 
-    # si la amplitud es mayor al 27 % ha ocurrido una rotura
-    if amplitude >= media_rango * MGnum:
+    # if the amplitude is greater than 27%, a breakage has occurred
+    if amplitude >= mean_range * MGnum:
         y_max = max(maxestable)
         y_min = min(minestable)
-        print('Rotura en la pasada: ' + str (idx + 1))
-        #FigTorque(pasada, DLdf, mean_torque, y_max, y_min)
+        print('Breakage in pass: ' + str(idx + 1))
+        #FigTorque(pass_str, DLdf, mean_torque, y_max, y_min)
         maxestable = []
         minestable = []
         mediaestable = []
@@ -233,8 +218,8 @@ for idx, DLdf in enumerate(DLlist):
         mediaestable.append(mean_torque)
         rangestable.append(amplitude)
 
-        dienteRotura = AnalisisRotura(DLlist, pas, y_min, y_max)
-        print("Diente rotura: " + str(dienteRotura))
+        broken_tooth = AnalyzeBreakage(DLlist, pass_num, y_min, y_max)
+        print("Broken tooth: " + str(broken_tooth))
 
     else:
         maxestable.append(max_torque)
@@ -242,13 +227,8 @@ for idx, DLdf in enumerate(DLlist):
         mediaestable.append(mean_torque)
         y_max = max(maxestable)
         y_min = min(minestable)
-        #FigTorque(pasada, DLdf, mean_torque, y_max, y_min)
-
-
+        #FigTorque(pass_str, DLdf, mean_torque, y_max, y_min)
 
     print('-----------')
-
-
-
 
 print("Transition: " + str(transition))
