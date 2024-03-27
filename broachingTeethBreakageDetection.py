@@ -11,7 +11,7 @@ import csv
 # In this program, data processing is performed and the data is plotted.
 
 # Path of the files
-pathDL = r'C:\Users\836582\Desktop\Brochado\Archivos Brochadora'
+pathDL = r'filesPath'
 
 # Input parameters
 teeth_number = 42
@@ -30,13 +30,13 @@ zonaEstableInicio = int(first_tooth_position) + (transition * int(step))
 zonaEstableFin =  int(first_tooth_position) + (int(teeth_number) - transition) * int(step)
 zonaBrochadoFin = int(first_tooth_position) + (int(teeth_number) * int(step))
 
-print("ZONA BROCHADO INICIO: " + str(zonaBrochadoInicio))
-print("ZONA ESTABLE INICIO: " + str(zonaEstableInicio))
-print("ZONA ESTABLE FIN: " + str(zonaEstableFin))
-print("ZONA BROCHADO FIN: " + str(zonaBrochadoFin))
+print("START BROACHING AREA: " + str(zonaBrochadoInicio))
+print("START STABLE ZONE: " + str(zonaEstableInicio))
+print("END STABLE ZONE: " + str(zonaEstableFin))
+print("END BROACHING AREA: " + str(zonaBrochadoFin))
 
 # Where to export the generated errors, models, and images
-ruta= r'C:\Users\836582\Desktop\Brochado\export'
+ruta= r'filesPathExport'
 
 
 colores = ['limegreen', 'teal', 'orange', 'gold', 'navy']
